@@ -5,10 +5,22 @@ import { Plus, Edit2, Trash2, User, Layout, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { getAllProfiles, createProfile, deleteProfile } from '@/app/actions/profile';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { slugify } from '@/lib/utils';
 
 export default function AdminPage() {
-  const [profiles, setProfiles] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<{ _id: string; slug: string; name: string; role?: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileToDelete, setProfileToDelete] = useState<string | null>(null);
 
   const fetchProfilesList = async () => {
     try {
@@ -35,7 +47,7 @@ export default function AdminPage() {
     if (!newProfileName) return;
     setIsCreating(true);
     
-    const slug = newProfileName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+    const slug = slugify(newProfileName);
     
     try {
       const newProfile = await createProfile({ name: newProfileName, slug });
@@ -45,25 +57,33 @@ export default function AdminPage() {
         setIsModalOpen(false);
         toast.success(`Profile "${newProfileName}" created!`);
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create profile. Slug might exist.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to create profile. Slug might exist.';
+      toast.error(message);
       console.error(error);
     } finally {
       setIsCreating(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this profile?")) return;
+  const handleDelete = (id: string) => {
+    setProfileToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!profileToDelete) return;
     
     const toastId = toast.loading('Deleting profile...');
     try {
-      await deleteProfile(id);
-      setProfiles(profiles.filter(p => p._id !== id));
+      await deleteProfile(profileToDelete);
+      setProfiles(profiles.filter(p => p._id !== profileToDelete));
       toast.success('Profile deleted', { id: toastId });
-    } catch (error: any) {
-      toast.error(error.message || 'Error deleting profile', { id: toastId });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error deleting profile';
+      toast.error(message, { id: toastId });
       console.error(error);
+    } finally {
+      setProfileToDelete(null);
     }
   };
 
@@ -178,6 +198,29 @@ export default function AdminPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog open={!!profileToDelete} onOpenChange={(open) => !open && setProfileToDelete(null)}>
+        <AlertDialogContent className="rounded-3xl border-border bg-card/95 backdrop-blur-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-light italic">Delete Profile?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This action cannot be undone. This will permanently delete the profile and all associated journey data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3 sm:gap-0">
+            <AlertDialogCancel className="rounded-2xl border-border hover:bg-muted transition-colors">
+              Go Back
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="rounded-2xl bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-all font-bold shadow-lg shadow-destructive/20"
+            >
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

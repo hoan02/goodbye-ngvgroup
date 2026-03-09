@@ -114,7 +114,7 @@ export default function MusicPlayer({
     >
       <audio
         ref={audioRef}
-        src={musicUrl}
+        src={musicUrl || undefined}
         loop
         muted={isMuted}
         preload="metadata"

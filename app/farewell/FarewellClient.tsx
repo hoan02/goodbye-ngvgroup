@@ -24,7 +24,7 @@ interface FarewellProfile {
   logoUrl?: string;
   tagline?: string;
   buttonText?: string;
-  sections: any[];
+  sections: { _id: string; title: string; content: string; type: string }[];
 }
 
 export default function FarewellClient({ profilePromise }: { profilePromise: Promise<FarewellProfile> }) {
@@ -129,7 +129,7 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
           <IntroScreen
             key="intro"
             onComplete={handleIntroComplete}
-            logoUrl={profile.logoUrl || '/logo.png'}
+            logoUrl="/logo.png"
             tagline={profile.tagline || ""}
             buttonText={profile.buttonText || "Bắt Đầu"}
           />
@@ -222,8 +222,8 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
       {phase !== 'intro' && (
         <div className="fixed bottom-8 left-8 z-50 flex flex-col-reverse items-start justify-start gap-4">
           <MusicPlayer
-            musicUrl={profile.musicUrl}
-            title={profile.musicTitle}
+            musicUrl="/music/TSFH-StarSky.mp3"
+            title="Two Steps From Hell - Star Sky"
             defaultMuted={false}
           />
           <ControlsPanel

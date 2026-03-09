@@ -10,7 +10,7 @@ export default async function Home() {
       <section className="relative h-screen min-h-[600px] flex flex-col items-center justify-center p-8 overflow-hidden sticky top-0 bg-black">
         {/* Background Image */}
         <div 
-          className="absolute inset-0 z-0 opacity-40"
+          className="absolute inset-0 z-0"
           style={{ 
             backgroundImage: 'url(/images/Year_End_Party_NGV_Group.jpeg)',
             backgroundSize: 'cover',
@@ -44,7 +44,7 @@ export default async function Home() {
                 </Link>
               </div>
             ) : (
-              allProfiles.map((profile: any) => (
+              allProfiles.map((profile: { _id: string; slug: string; name: string; role?: string }) => (
                 <Link 
                   key={profile._id}
                   href={`/farewell?profile=${profile.slug}`}
