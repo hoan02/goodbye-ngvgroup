@@ -34,7 +34,7 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
   const [key, setKey] = useState(0);
   const [scrollSpeed, setScrollSpeed] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('farewell-speed');
+      const saved = localStorage.getItem('speed');
       return saved !== null ? parseFloat(saved) : 1.0;
     }
     return 1.0;
@@ -43,7 +43,7 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
 
   // Save speed to localStorage
   useEffect(() => {
-    localStorage.setItem('farewell-speed', scrollSpeed.toString());
+    localStorage.setItem('speed', scrollSpeed.toString());
   }, [scrollSpeed]);
 
   const handleRestart = () => {

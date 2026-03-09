@@ -19,14 +19,14 @@ export default function MusicPlayer({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('farewell-muted');
+      const saved = localStorage.getItem('muted');
       return saved === 'true' || defaultMuted;
     }
     return defaultMuted;
   });
   const [volume, setVolume] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('farewell-volume');
+      const saved = localStorage.getItem('volume');
       return saved !== null ? parseFloat(saved) : 0.5;
     }
     return 0.5;
@@ -38,11 +38,11 @@ export default function MusicPlayer({
 
   // Save settings to localStorage
   useEffect(() => {
-    localStorage.setItem('farewell-volume', volume.toString());
+    localStorage.setItem('volume', volume.toString());
   }, [volume]);
 
   useEffect(() => {
-    localStorage.setItem('farewell-muted', isMuted.toString());
+    localStorage.setItem('muted', isMuted.toString());
   }, [isMuted]);
 
   const isExpanded = isHovered || isPinned;
