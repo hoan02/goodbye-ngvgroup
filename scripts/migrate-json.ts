@@ -1,5 +1,12 @@
+import * as dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+
+if (fs.existsSync(path.join(process.cwd(), ".env.local"))) {
+  dotenv.config({ path: ".env.local" });
+} else {
+  dotenv.config();
+}
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { profiles, sections } from "../lib/db/schema";
@@ -32,7 +39,7 @@ async function main() {
     logoUrl: data.intro.logoUrl,
     musicUrl: data.music.url,
     musicTitle: data.music.title,
-    bgImageUrl: "/images/Year_End_Party_NGV_Group.jpeg", 
+    bgImageUrl: "/images/Year_End_Party_NGV_Group.jpeg",
   }).returning();
 
   const sectionsToInsert = data.sections.map((s: any, index: number) => ({

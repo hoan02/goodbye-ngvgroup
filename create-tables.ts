@@ -1,5 +1,12 @@
 import * as dotenv from "dotenv";
-dotenv.config();
+import * as fs from "fs";
+import * as path from "path";
+
+if (fs.existsSync(path.join(process.cwd(), ".env.local"))) {
+  dotenv.config({ path: ".env.local" });
+} else {
+  dotenv.config();
+}
 
 import pg from "pg";
 const { Pool } = pg;
@@ -17,9 +24,9 @@ async function init() {
 
   try {
     console.log("Creating tables with pg...");
-    
+
     const client = await pool.connect();
-    
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS profiles (
         id SERIAL PRIMARY KEY,

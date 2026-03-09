@@ -1,5 +1,12 @@
 import * as dotenv from "dotenv";
-dotenv.config();
+import * as fs from "fs";
+import * as path from "path";
+
+if (fs.existsSync(path.join(process.cwd(), ".env.local"))) {
+  dotenv.config({ path: ".env.local" });
+} else {
+  dotenv.config();
+}
 
 import { db } from "./lib/db";
 import { sql } from "drizzle-orm";
