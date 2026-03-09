@@ -3,6 +3,8 @@ import { Be_Vietnam_Pro } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
+import { Toaster } from 'react-hot-toast';
+
 const beVietnamPro = Be_Vietnam_Pro({
   weight: ['300', '400', '500', '600', '700'],
   subsets: ['latin', 'vietnamese'],
@@ -10,31 +12,33 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const viewport: Viewport = {
-  themeColor: '#0d0d0d',
+  themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
   userScalable: false,
 };
 
 export const metadata: Metadata = {
-  title: 'A Cinematic Farewell',
-  description: 'A beautifully crafted farewell experience with scrolling credits, music, and animations',
-  generator: 'v0.app',
+  title: {
+    default: 'NGV Group - Farewell & Memories',
+    template: '%s | NGV Group'
+  },
+  description: 'Ghi lại những khoảnh khắc và lời chúc ý nghĩa của đại gia đình NGV Group.',
+  metadataBase: new URL('http://localhost:3000'),
+  openGraph: {
+    title: 'NGV Group - Farewell & Memories',
+    description: 'Ghi lại những khoảnh khắc và lời chúc ý nghĩa của đại gia đình NGV Group.',
+    url: '/',
+    siteName: 'NGV Group Farewell',
+    locale: 'vi_VN',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
+    icon: '/icon.svg',
     apple: '/apple-icon.png',
   },
 };
@@ -48,6 +52,18 @@ export default function RootLayout({
     <html lang="vi">
       <body className={`${beVietnamPro.className} antialiased bg-background text-foreground`}>
         {children}
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#18181b',
+              color: '#fff',
+              border: '1px solid #27272a',
+              borderRadius: '12px',
+              fontSize: '14px',
+            },
+          }}
+        />
         <Analytics />
       </body>
     </html>

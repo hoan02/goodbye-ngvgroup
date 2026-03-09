@@ -1,40 +1,101 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useAnimation, useMotionValue } from 'framer-motion';
 
 interface Section {
   title: string;
   content?: string;
-  credits?: string[];
-  memories?: string[];
-  message?: string;
-  achievements?: string[];
-  closing?: string;
+  items?: any; // Updated to match schema
 }
 
 interface CreditScrollProps {
   sections: Section[];
   duration: number;
+  speed: number;
+  isPaused: boolean;
   onComplete: () => void;
 }
 
 export default function CreditScroll({
   sections,
-  duration,
+  duration: baseDuration,
+  speed,
+  isPaused,
   onComplete,
 }: CreditScrollProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
+  const controls = useAnimation();
+  const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      onComplete();
-    }, (duration + 8) * 1000); // Add 8 seconds pause
+    // Initial start
+    if (!hasStarted) {
+      controls.start({
+        y: '-100%',
+        transition: {
+          duration: (baseDuration + 8) / speed,
+          ease: 'linear',
+        }
+      });
+      setHasStarted(true);
+    }
+  }, [baseDuration, controls, hasStarted, speed]);
 
-    return () => clearTimeout(timer);
-  }, [duration, onComplete]);
+  useEffect(() => {
+    // Handle Pause/Speed changes
+    if (isPaused) {
+      controls.stop();
+    } else {
+      // Calculate remaining distance and time to continue smoothly
+      controls.start({
+        y: '-100%',
+        transition: {
+          duration: (baseDuration + 8) / speed, // This is a simplified approach
+          ease: 'linear',
+        }
+      });
+    }
+  }, [isPaused, speed, controls, baseDuration]);
+
+  // Better approach for speed/pause control: using a custom loop
+  const containerRef = useRef<HTMLDivElement>(null);
+  const position = useMotionValue(0); 
+  const requestRef = useRef<number>(null!);
+
+  useEffect(() => {
+    let lastTime = performance.now();
+    const totalHeight = containerRef.current?.scrollHeight || 2000;
+    const windowHeight = window.innerHeight;
+    
+    // Convert baseDuration to a standard pixels-per-second
+    // Base speed: move totalHeight + windowHeight in baseDuration seconds
+    const basePixelsPerSec = (totalHeight + windowHeight) / (baseDuration + 8);
+
+    const animate = (time: number) => {
+      if (!isPaused) {
+        const deltaTime = (time - lastTime) / 1000;
+        const currentY = position.get();
+        const nextY = currentY - (basePixelsPerSec * speed * deltaTime);
+        
+        position.set(nextY);
+
+        if (nextY < -totalHeight) {
+          onComplete();
+          return;
+        }
+      }
+      lastTime = time;
+      requestRef.current = requestAnimationFrame(animate);
+    };
+
+    requestRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, [isPaused, speed, baseDuration, onComplete, position]);
+
+  // Set initial position
+  useEffect(() => {
+    position.set(window.innerHeight * 0.8);
+  }, [position]);
 
   return (
     <motion.div
@@ -46,89 +107,42 @@ export default function CreditScroll({
     >
       <motion.div
         ref={containerRef}
-        initial={{ y: '100vh' }}
-        animate={{ y: '-100%' }}
-        transition={{
-          duration: duration + 8,
-          ease: 'linear',
-          delay: 2,
-        }}
+        style={{ y: position }}
         className="w-full max-w-4xl mx-auto px-8 text-center"
       >
         <div className="pt-[15vh]"></div>
-        {/* Content sections */}
         {sections.map((section, idx) => (
           <div key={idx} className="mb-32 py-16">
-            <h2 className="text-5xl md:text-6xl font-light text-accent mb-8 tracking-widest">
+            <h2 className="text-5xl md:text-7xl font-light text-accent mb-10 tracking-[0.2em] uppercase italic">
               {section.title}
             </h2>
 
             {section.content && (
-              <p className="text-xl md:text-2xl text-foreground leading-relaxed text-balance italic">
+              <p className="text-2xl md:text-3xl text-foreground leading-relaxed text-balance italic font-light">
                 {section.content}
               </p>
             )}
 
-            {section.credits && (
-              <div className="space-y-4">
-                {section.credits.map((credit, i) => (
-                  <p key={i} className="text-lg md:text-xl text-muted-foreground">
-                    {credit}
+            {section.items && Array.isArray(section.items) && (
+              <div className="space-y-6 mt-8">
+                {section.items.map((item: any, i: number) => (
+                  <p key={i} className="text-xl md:text-2xl text-muted-foreground font-light tracking-wide">
+                    {item}
                   </p>
                 ))}
               </div>
-            )}
-
-            {section.memories && (
-              <div className="space-y-6">
-                {section.memories.map((memory, i) => (
-                  <p
-                    key={i}
-                    className="text-lg md:text-xl text-foreground leading-relaxed"
-                  >
-                    {memory}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {section.message && (
-              <p className="text-2xl md:text-3xl text-foreground leading-relaxed italic text-balance">
-                {section.message}
-              </p>
-            )}
-
-            {section.achievements && (
-              <div className="space-y-4">
-                {section.achievements.map((achievement, i) => (
-                  <p
-                    key={i}
-                    className="text-lg md:text-xl text-muted-foreground"
-                  >
-                    ✦ {achievement}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {section.closing && (
-              <p className="text-3xl md:text-4xl text-accent font-light tracking-wider">
-                {section.closing}
-              </p>
             )}
           </div>
         ))}
 
-        {/* Empty space at bottom */}
         <div className="h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-muted-foreground text-lg">Thank you for everything</p>
+          <div className="text-center opacity-40">
+            <p className="text-muted-foreground text-xl uppercase tracking-[0.5em] font-light">Thank you for everything</p>
           </div>
         </div>
       </motion.div>
 
-      {/* Vignette effect */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-background/50" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent to-background/50" />
     </motion.div>
   );
 }

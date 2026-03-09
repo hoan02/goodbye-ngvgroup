@@ -19,6 +19,7 @@ export default function IntroScreen({
 }: IntroScreenProps) {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
+  const [countdown, setCountdown] = useState(3);
 
   // Typewriter effect
   useEffect(() => {
@@ -31,6 +32,18 @@ export default function IntroScreen({
       setIsComplete(true);
     }
   }, [displayedText, tagline]);
+
+  // Auto-start countdown
+  useEffect(() => {
+    if (isComplete && countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (isComplete && countdown === 0) {
+      onComplete();
+    }
+  }, [isComplete, countdown, onComplete]);
 
   return (
     <motion.div
@@ -65,17 +78,26 @@ export default function IntroScreen({
         </h1>
       </motion.div>
 
-      {/* Button */}
+      {/* Button and Countdown */}
       {isComplete && (
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          onClick={onComplete}
-          className="mt-16 px-8 py-3 bg-accent text-accent-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
-        >
-          {buttonText}
-        </motion.button>
+        <div className="mt-16 flex flex-col items-center gap-4">
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            onClick={onComplete}
+            className="px-8 py-3 bg-accent text-accent-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+          >
+            {buttonText}
+          </motion.button>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-xs text-muted-foreground uppercase tracking-widest"
+          >
+            Tự động bắt đầu sau {countdown}s...
+          </motion.p>
+        </div>
       )}
     </motion.div>
   );

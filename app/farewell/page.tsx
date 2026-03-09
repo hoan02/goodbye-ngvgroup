@@ -1,107 +1,47 @@
-'use client';
+import { db } from "@/lib/db";
+import { profiles } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { Metadata } from "next";
+import FarewellClient from "./FarewellClient";
+import { Suspense } from "react";
 
-import { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import ParticleBackground from '@/components/ParticleBackground';
-import IntroScreen from '@/components/IntroScreen';
-import CreditScroll from '@/components/CreditScroll';
-import MusicPlayer from '@/components/MusicPlayer';
-import ControlsPanel from '@/components/ControlsPanel';
-import farewell from '@/data/farewell.json';
+type Props = {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-type Phase = 'intro' | 'credits' | 'outro';
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const slug = (searchParams.profile as string) || 'ngv-group';
+  
+  const profile = await db.query.profiles.findFirst({
+    where: eq(profiles.slug, slug),
+  });
+
+  if (!profile) {
+    return {
+      title: "Farewell - Profile Not Found",
+    };
+  }
+
+  return {
+    title: `Farewell Journey: ${profile.name}`,
+    description: profile.tagline || `A cinematic farewell experience for ${profile.name}.`,
+    openGraph: {
+      title: `${profile.name} - Farewell & Memories`,
+      description: profile.tagline || `Ghi lại những khoảnh khắc và lời chúc ý nghĩa của ${profile.name}.`,
+      images: profile.avatarUrl ? [{ url: profile.avatarUrl }] : [],
+    },
+  };
+}
 
 export default function FarewellPage() {
-  const [phase, setPhase] = useState<Phase>('intro');
-  const [key, setKey] = useState(0);
-
-  const handleIntroComplete = () => {
-    setPhase('credits');
-  };
-
-  const handleCreditsComplete = () => {
-    setPhase('outro');
-  };
-
-  const handleRestart = () => {
-    setPhase('intro');
-    setKey((k) => k + 1);
-  };
-
-  const handleSkip = () => {
-    setPhase('outro');
-  };
-
-  const handleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  };
-
   return (
-    <div key={key} className="w-full h-screen bg-background overflow-hidden">
-      {/* Particle Background */}
-      <ParticleBackground count={farewell.animations.particleCount} />
-
-      <AnimatePresence mode="wait">
-        {phase === 'intro' && (
-          <IntroScreen
-            key="intro"
-            onComplete={handleIntroComplete}
-            logoUrl={farewell.intro.logoUrl}
-            tagline={farewell.intro.tagline}
-            buttonText={farewell.intro.buttonText}
-          />
-        )}
-
-        {phase === 'credits' && (
-          <CreditScroll
-            key="credits"
-            sections={farewell.sections}
-            duration={farewell.animations.creditScrollDuration}
-            onComplete={handleCreditsComplete}
-          />
-        )}
-
-        {phase === 'outro' && (
-          <div key="outro" className="fixed inset-0 z-40 flex items-center justify-center bg-gradient-to-b from-background to-black">
-            <div className="text-center">
-              <h1 className="text-6xl md:text-7xl font-light text-accent mb-8">
-                {farewell.company.name}
-              </h1>
-              <p className="text-2xl text-muted-foreground mb-12">
-                Forever in our hearts
-              </p>
-              <button
-                onClick={handleRestart}
-                className="px-8 py-3 bg-accent text-accent-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
-              >
-                Watch Again
-              </button>
-            </div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Controls */}
-      {phase !== 'intro' && (
-        <>
-          <MusicPlayer
-            musicUrl={farewell.music.url}
-            title={farewell.music.title}
-            defaultMuted={farewell.music.defaultMuted}
-          />
-          <ControlsPanel
-            onRestart={handleRestart}
-            onSkip={handleSkip}
-            onFullscreen={handleFullscreen}
-          />
-        </>
-      )}
-    </div>
+    <Suspense fallback={
+      <div className="w-full h-screen flex items-center justify-center bg-background text-accent animate-pulse text-2xl font-light tracking-widest">
+        LOADING...
+      </div>
+    }>
+      <FarewellClient />
+    </Suspense>
   );
 }
