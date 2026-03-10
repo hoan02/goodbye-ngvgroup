@@ -17,6 +17,7 @@ const profileSchema = new mongoose.Schema({
   bgImageUrl: { type: String, default: '/images/Year_End_Party_NGV_Group.jpeg' },
   logoUrl: { type: String, default: '/logo.png' },
   tagline: { type: String },
+  thumbUrl: { type: String },
   buttonText: { type: String, default: 'Bắt Đầu' },
   musicUrl: { type: String },
   musicTitle: { type: String },

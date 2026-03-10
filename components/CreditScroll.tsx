@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
+import confetti from 'canvas-confetti';
+
 
 interface Section {
   title: string;
   content?: string;
-  items?: any; // Updated to match schema
+  items?: string[]; // Updated to match schema
 }
 
 interface CreditScrollProps {
@@ -23,11 +25,11 @@ export default function CreditScroll({
   onComplete,
 }: CreditScrollProps) {
   const controls = useAnimation();
-  const [hasStarted, setHasStarted] = useState(false);
+  const hasStarted = useRef(false);
 
   useEffect(() => {
     // Initial start
-    if (!hasStarted) {
+    if (!hasStarted.current) {
       controls.start({
         y: '-100%',
         transition: {
@@ -35,9 +37,9 @@ export default function CreditScroll({
           ease: 'linear',
         }
       });
-      setHasStarted(true);
+      hasStarted.current = true;
     }
-  }, [baseDuration, controls, hasStarted, speed]);
+  }, [baseDuration, controls, speed]);
 
   useEffect(() => {
     // Handle Pause/Speed changes
@@ -68,6 +70,35 @@ export default function CreditScroll({
     // Convert baseDuration to a standard pixels-per-second
     // Base speed: move totalHeight + windowHeight in baseDuration seconds
     const basePixelsPerSec = (totalHeight + windowHeight) / (baseDuration + 8);
+    
+    let confettiFired = false;
+
+    const fireConfetti = () => {
+      const duration = 3 * 1000;
+      const end = Date.now() + duration;
+
+      const frame = () => {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+    };
 
     const animate = (time: number) => {
       if (!isPaused) {
@@ -76,6 +107,11 @@ export default function CreditScroll({
         const nextY = currentY - (basePixelsPerSec * speed * deltaTime);
         
         position.set(nextY);
+
+        if (nextY < -(totalHeight - windowHeight * 1.5) && !confettiFired) {
+          confettiFired = true;
+          fireConfetti();
+        }
 
         if (nextY < -totalHeight) {
           onComplete();
@@ -125,7 +161,7 @@ export default function CreditScroll({
 
             {section.items && Array.isArray(section.items) && (
               <div className="space-y-6 mt-8">
-                {section.items.map((item: any, i: number) => (
+                {section.items.map((item: string, i: number) => (
                   <p key={i} className="text-xl md:text-2xl text-muted-foreground font-light tracking-wide">
                     {item}
                   </p>

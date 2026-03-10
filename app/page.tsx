@@ -30,9 +30,9 @@ export default async function Home() {
       {/* Profiles Section */}
       <section id="profiles" className="relative z-20 min-h-screen bg-background p-8 md:p-24 flex flex-col items-center shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
         <div className="max-w-6xl w-full">
-          <div className="mb-20 text-center">
-            <h2 className="text-4xl md:text-6xl font-light tracking-tight mb-4 italic">Memories & Farewells</h2>
-            <p className="text-muted-foreground text-lg">Select a profile to begin the journey</p>
+          <div className="mb-24 text-center space-y-4">
+            <h2 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4 bg-gradient-to-br from-foreground via-foreground/80 to-accent text-transparent bg-clip-text">Memories & Farewells</h2>
+            <p className="text-muted-foreground text-xl md:text-2xl font-light italic tracking-wide">Select a profile to begin the journey</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -44,26 +44,40 @@ export default async function Home() {
                 </Link>
               </div>
             ) : (
-              allProfiles.map((profile: { _id: string; slug: string; name: string; role?: string }) => (
+              allProfiles.map((profile: { _id: string; slug: string; name: string; role?: string; thumbUrl?: string }) => (
                 <Link 
                   key={profile._id}
                   href={`/farewell?profile=${profile.slug}`}
-                  className="group relative overflow-hidden bg-card border border-border rounded-3xl p-1 aspect-[4/5] hover:border-accent/50 transition-all duration-500 shadow-xl flex flex-col"
+                  className="group relative overflow-hidden rounded-[2rem] p-[2px] aspect-[4/5] transition-all duration-700 shadow-xl hover:shadow-2xl hover:shadow-accent/20 flex flex-col hover:-translate-y-2"
                 >
-                  <div className="relative flex-grow overflow-hidden rounded-[calc(1.5rem-4px)] bg-muted/20">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
-                    <div className="absolute inset-0 flex items-center justify-center italic text-9xl font-black text-foreground/5 pointer-events-none group-hover:text-accent/10 transition-colors uppercase">
-                      {profile.name.charAt(0)}
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-border/40 to-muted/10 group-hover:from-accent/60 group-hover:to-accent/20 transition-all duration-700" />
+                  <div className="relative flex-grow overflow-hidden rounded-[calc(2rem-2px)] bg-card border border-transparent/10">
+                    {profile.thumbUrl ? (
+                      <>
+                        <div 
+                          className="absolute inset-0 bg-cover bg-center transition-transform duration-[1.5s] ease-out group-hover:scale-[1.15] opacity-90 group-hover:opacity-100"
+                          style={{ backgroundImage: `url(${profile.thumbUrl})` }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 z-10 opacity-80 group-hover:opacity-90 transition-opacity duration-700" />
+                      </>
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-br from-muted/50 to-muted/20 z-10" />
+                        <div className="absolute inset-0 flex items-center justify-center italic text-9xl font-black text-foreground/5 pointer-events-none group-hover:text-accent/10 transition-colors uppercase duration-700">
+                          {profile.name.charAt(0)}
+                        </div>
+                      </>
+                    )}
                     
-                    <div className="absolute bottom-0 left-0 p-8 z-20 w-full transform group-hover:-translate-y-2 transition-transform duration-500">
-                      <p className="text-accent text-sm font-bold tracking-widest uppercase mb-2 opacity-0 group-hover:opacity-100 transition-opacity">Discover Journey</p>
-                      <h3 className="text-3xl font-bold text-white mb-1 group-hover:text-accent transition-colors">
-                        {profile.name}
-                      </h3>
-                      <p className="text-white/60 font-medium">
-                        {profile.role || 'Team Member'}
-                      </p>
+                    <div className="absolute bottom-0 left-0 p-8 md:p-10 z-20 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700 ease-out flex flex-col justify-end h-full">
+                      <div className="mt-auto">
+                        <h3 className="text-3xl lg:text-4xl font-bold text-white mb-2 group-hover:text-accent transition-colors duration-500 drop-shadow-lg tracking-tight">
+                          {profile.name}
+                        </h3>
+                        <p className="text-white/60 font-medium">
+                          {profile.role || 'Team Member'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </Link>

@@ -20,7 +20,7 @@ export async function getProfileBySlug(slug: string) {
 
     // Sort sections by 'order' property ascending
     if (plainProfile.sections && Array.isArray(plainProfile.sections)) {
-      plainProfile.sections.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      plainProfile.sections.sort((a: { order?: number }, b: { order?: number }) => (a.order || 0) - (b.order || 0));
     }
 
     return plainProfile;
@@ -33,7 +33,7 @@ export async function getProfileBySlug(slug: string) {
 export async function getAllProfiles() {
   try {
     await dbConnect();
-    const profiles = await Profile.find({}, 'slug name role department').sort({ createdAt: -1 }).lean();
+    const profiles = await Profile.find({}, 'slug name role department thumbUrl').sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(profiles));
   } catch (error) {
     console.error("Error fetching all profiles:", error);
@@ -55,7 +55,7 @@ export async function getProfileById(id: string) {
     // Sort sections by order if they exist
     const plainProfile = JSON.parse(JSON.stringify(profile));
     if (plainProfile.sections && Array.isArray(plainProfile.sections)) {
-      plainProfile.sections.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      plainProfile.sections.sort((a: { order?: number }, b: { order?: number }) => (a.order || 0) - (b.order || 0));
     }
 
     return plainProfile;
@@ -85,7 +85,7 @@ export async function createProfile(data: { name: string; slug: string }) {
   }
 }
 
-export async function updateProfile(data: any) {
+export async function updateProfile(data: { _id?: string;[key: string]: unknown }) {
   try {
     const { _id, ...updateData } = data;
 
@@ -150,7 +150,7 @@ export async function seedProfile() {
       return { message: "Initial profile already exists" };
     }
 
-    const sections = data.sections.map((s: any, index: number) => ({
+    const sections = data.sections.map((s: { title: string; content?: string; credits?: unknown; memories?: unknown; achievements?: unknown; message?: string; closing?: string }, index: number) => ({
       title: s.title,
       type: s.content ? 'text' : (s.credits ? 'credits' : (s.memories ? 'memories' : (s.achievements ? 'achievements' : (s.message ? 'text' : (s.closing ? 'text' : 'list'))))),
       content: s.content || s.message || s.closing || null,
