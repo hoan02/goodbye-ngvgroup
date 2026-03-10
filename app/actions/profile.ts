@@ -8,7 +8,7 @@ export async function getProfileBySlug(slug: string) {
     await dbConnect();
 
     // Find the profile and sort sections by order
-    const profile = await Profile.findOne({ slug }).lean();
+    const profile = await Profile.findOne({ slug }).select('-__v').lean();
 
     if (!profile) {
       throw new Error("Profile not found");
@@ -33,7 +33,7 @@ export async function getProfileBySlug(slug: string) {
 export async function getAllProfiles() {
   try {
     await dbConnect();
-    const profiles = await Profile.find({}, 'slug name role department thumbUrl').sort({ createdAt: -1 }).lean();
+    const profiles = await Profile.find({}, 'slug name bio role department thumbUrl').sort({ createdAt: -1 }).lean();
     return JSON.parse(JSON.stringify(profiles));
   } catch (error) {
     console.error("Error fetching all profiles:", error);

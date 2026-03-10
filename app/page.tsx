@@ -44,7 +44,7 @@ export default async function Home() {
                 </Link>
               </div>
             ) : (
-              allProfiles.map((profile: { _id: string; slug: string; name: string; role?: string; thumbUrl?: string }) => (
+              allProfiles.map((profile: { _id: string; slug: string; name: string; bio?: string; role?: string; thumbUrl?: string }) => (
                 <Link 
                   key={profile._id}
                   href={`/farewell?profile=${profile.slug}`}
@@ -77,6 +77,13 @@ export default async function Home() {
                         <p className="text-white/60 font-medium">
                           {profile.role || 'Team Member'}
                         </p>
+                        {profile.bio && (
+                          <div className="mt-4 transition-all duration-700 ease-out">
+                            <p className="border-t border-white/20 pt-3 text-white/80 text-sm italic line-clamp-2">
+                              &quot;{profile.bio}&quot;
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

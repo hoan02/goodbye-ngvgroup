@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
 import confetti from 'canvas-confetti';
-
+import MasonryGallery from '@/components/MasonryGallery';
 
 interface Section {
   title: string;
+  type?: string;
   content?: string;
   items?: string[]; // Updated to match schema
 }
@@ -153,11 +154,13 @@ export default function CreditScroll({
               {section.title}
             </h2>
 
-            {section.content && (
+            {section.type === 'gallery' && section.content ? (
+              <MasonryGallery images={section.content.split('\n').filter(url => url.trim() !== '')} />
+            ) : section.content ? (
               <p className="text-2xl md:text-3xl text-foreground leading-relaxed text-balance italic font-light">
                 {section.content}
               </p>
-            )}
+            ) : null}
 
             {section.items && Array.isArray(section.items) && (
               <div className="space-y-6 mt-8">

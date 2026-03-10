@@ -11,6 +11,8 @@ const sectionSchema = new mongoose.Schema({
 const profileSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   name: { type: String, required: true },
+  bio: { type: String },
+  particleTheme: { type: String, default: 'stars' },
   role: { type: String },
   department: { type: String },
   avatarUrl: { type: String },

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 
 interface IntroScreenProps {
   onComplete: () => void;
   logoUrl: string;
   tagline: string;
+  bio?: string;
   buttonText: string;
 }
 
@@ -15,11 +15,12 @@ export default function IntroScreen({
   onComplete,
   logoUrl,
   tagline,
+  bio,
   buttonText,
 }: IntroScreenProps) {
   const [displayedText, setDisplayedText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
   const [countdown, setCountdown] = useState(3);
+  const isComplete = displayedText.length === tagline.length;
 
   // Typewriter effect
   useEffect(() => {
@@ -28,8 +29,6 @@ export default function IntroScreen({
         setDisplayedText(tagline.slice(0, displayedText.length + 1));
       }, 80);
       return () => clearTimeout(timeout);
-    } else if (displayedText.length === tagline.length) {
-      setIsComplete(true);
     }
   }, [displayedText, tagline]);
 
@@ -61,7 +60,12 @@ export default function IntroScreen({
         className="mb-12"
       >
         <div className="relative w-32 h-32 flex items-center justify-center">
-          <div className="text-4xl font-bold text-accent">∞</div>
+          {logoUrl !== '/logo.png' && logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="Logo" className="w-full h-full object-contain drop-shadow-lg" />
+          ) : (
+            <div className="text-4xl font-bold text-accent">∞</div>
+          )}
         </div>
       </motion.div>
 
@@ -76,6 +80,16 @@ export default function IntroScreen({
           {displayedText}
           {!isComplete && <span className="animate-pulse">_</span>}
         </h1>
+        {isComplete && bio && (
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+            className="mt-6 text-xl text-muted-foreground italic"
+          >
+            &quot;{bio}&quot;
+          </motion.p>
+        )}
       </motion.div>
 
       {/* Button and Countdown */}

@@ -9,6 +9,8 @@ import IntroScreen from '@/components/IntroScreen';
 import CreditScroll from '@/components/CreditScroll';
 import MusicPlayer from '@/components/MusicPlayer';
 import ControlsPanel from '@/components/ControlsPanel';
+import Reactions from '@/components/Reactions';
+import Guestbook from '@/components/Guestbook';
 
 type Phase = 'intro' | 'credits' | 'outro';
 
@@ -16,6 +18,7 @@ interface FarewellProfile {
   _id: string;
   slug: string;
   name: string;
+  bio?: string;
   role?: string;
   department?: string;
   musicUrl: string;
@@ -24,6 +27,7 @@ interface FarewellProfile {
   logoUrl?: string;
   tagline?: string;
   buttonText?: string;
+  particleTheme?: string;
   sections: { _id: string; title: string; content: string; type: string }[];
 }
 
@@ -122,15 +126,16 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
       )}
 
       {/* Particle Background */}
-      <ParticleBackground count={100} />
+      <ParticleBackground count={100} theme={profile.particleTheme} />
 
       <AnimatePresence mode="wait">
         {phase === 'intro' && (
           <IntroScreen
             key="intro"
             onComplete={handleIntroComplete}
-            logoUrl="/logo.png"
+            logoUrl={profile.logoUrl || "/logo.png"}
             tagline={profile.tagline || ""}
+            bio={profile.bio}
             buttonText={profile.buttonText || "Bắt Đầu"}
           />
         )}
@@ -147,27 +152,28 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
         )}
 
         {phase === 'outro' && (
-          <div key="outro" className="fixed inset-0 z-40 flex items-center justify-center overflow-hidden">
+          <div key="outro" className="fixed inset-0 z-40 flex flex-col items-center justify-start overflow-y-auto overflow-x-hidden pb-32">
             {/* Cinematic Background Blur */}
             <motion.div 
               initial={{ scale: 1.1, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 2 }}
-              className="absolute inset-0 z-0 shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]"
+              className="fixed inset-0 z-0 shadow-[inset_0_0_200px_rgba(0,0,0,0.8)] pointer-events-none"
               style={{
                 backgroundImage: profile.bgImageUrl ? `url(${profile.bgImageUrl})` : 'none',
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'blur(30px) brightness(0.4)',
+                transform: 'translateZ(-1px) scale(2)' // Parallax workaround
               }}
             />
             
-            <div className="relative z-10 text-center p-8 max-w-2xl w-full mx-4">
+            <div className="relative z-10 text-center p-8 max-w-5xl w-full mx-auto mt-auto pt-[15vh]">
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.5 }}
-                className="bg-card/30 backdrop-blur-xl border border-white/10 rounded-[40px] p-12 shadow-2xl"
+                className="bg-card/30 backdrop-blur-xl border border-white/10 rounded-[40px] p-8 md:p-12 shadow-2xl"
               >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -188,6 +194,11 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
                   )}
                   {profile.department && (
                     <p className="text-lg text-white/60 italic font-extralight tracking-widest">{profile.department}</p>
+                  )}
+                   {profile.bio && (
+                    <div className="pt-4 mt-6 border-t border-white/10 max-w-lg mx-auto">
+                      <p className="text-base md:text-lg text-accent/90 italic font-medium leading-relaxed">&quot;{profile.bio}&quot;</p>
+                    </div>
                   )}
                 </div>
 
@@ -210,8 +221,18 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 1.5, delay: 0.8 }}
-                  className="w-20 h-px bg-accent/50 mx-auto mt-12"
+                  className="w-20 h-px bg-accent/50 mx-auto mt-12 mb-8"
                 />
+                
+                {/* Guestbook Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, delay: 1 }}
+                  className="w-full"
+                >
+                  <Guestbook profileId={profile._id} />
+                </motion.div>
               </motion.div>
             </div>
           </div>
@@ -235,6 +256,11 @@ export default function FarewellClient({ profilePromise }: { profilePromise: Pro
             setIsPaused={setIsPaused}
           />
         </div>
+      )}
+
+      {/* Interactive Reactions (Bottom Right) */}
+      {phase !== 'intro' && (
+        <Reactions />
       )}
     </div>
   );

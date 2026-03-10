@@ -21,8 +21,10 @@ export interface ProfileData {
   _id: string;
   name: string;
   slug: string;
+  bio?: string;
   role?: string;
   department?: string;
+  particleTheme?: string;
   thumbUrl?: string;
   sections: Section[];
 }
@@ -175,6 +177,16 @@ export default function ProfileEditorClient({ initialProfile }: { initialProfile
                   className="w-full bg-background border border-border rounded-2xl px-5 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all"
                 />
               </div>
+
+              <div className="space-y-3 md:col-span-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Bio / Quote</label>
+                <textarea 
+                  value={profile.bio || ''} 
+                  onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                  placeholder="A short biography or a favorite quote..."
+                  className="w-full min-h-[100px] bg-background border border-border rounded-2xl px-5 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all resize-y"
+                />
+              </div>
               
               <div className="space-y-3 md:col-span-2 border-t border-border pt-6 mt-2">
                 <div className="flex items-center justify-between mb-2">
@@ -201,6 +213,20 @@ export default function ProfileEditorClient({ initialProfile }: { initialProfile
                      />
                    )}
                 </div>
+              </div>
+
+              <div className="space-y-3 md:col-span-2 border-t border-border pt-6 mt-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Particle Theme</label>
+                <select 
+                  value={profile.particleTheme || 'stars'} 
+                  onChange={(e) => setProfile({...profile, particleTheme: e.target.value})}
+                  className="w-full bg-background border border-border rounded-2xl px-5 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all font-medium appearance-none"
+                >
+                  <option value="stars">✨ Default Stars</option>
+                  <option value="rain">🌧️ Sad Rain</option>
+                  <option value="confetti">🎉 Party Confetti</option>
+                  <option value="snow">❄️ Gentle Snow</option>
+                </select>
               </div>
             </div>
           </section>
@@ -251,6 +277,14 @@ export default function ProfileEditorClient({ initialProfile }: { initialProfile
                               <div className="flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-3 flex-grow">
                                   <span className="text-xs font-black bg-muted px-2 py-1 rounded text-muted-foreground tabular-nums">#{idx + 1}</span>
+                                  <select
+                                    value={section.type || 'text'}
+                                    onChange={(e) => updateSection(section.tempId, 'type', e.target.value)}
+                                    className="bg-accent/10 border-none text-accent text-xs font-bold px-2 py-1 rounded outline-none"
+                                  >
+                                    <option value="text">Text</option>
+                                    <option value="gallery">Gallery</option>
+                                  </select>
                                   <input 
                                     type="text" 
                                     value={section.title}
@@ -266,12 +300,24 @@ export default function ProfileEditorClient({ initialProfile }: { initialProfile
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
-                              <textarea 
-                                className="w-full bg-background border border-border rounded-2xl p-4 text-base min-h-[120px] outline-none focus:ring-2 focus:ring-accent/10 transition-all resize-none"
-                                value={section.content || ''}
-                                onChange={(e) => updateSection(section.tempId, 'content', e.target.value)}
-                                placeholder="Viết những lời tri ân, kỷ niệm tại đây..."
-                              />
+                              {section.type === 'gallery' ? (
+                                <div>
+                                  <p className="text-xs text-muted-foreground mb-2 font-bold uppercase tracking-wider">Image URLs (One per line)</p>
+                                  <textarea 
+                                    className="w-full bg-background border border-border rounded-2xl p-4 text-sm font-mono whitespace-pre min-h-[120px] outline-none focus:ring-2 focus:ring-accent/10 transition-all resize-none"
+                                    value={section.content || ''}
+                                    onChange={(e) => updateSection(section.tempId, 'content', e.target.value)}
+                                    placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.png"
+                                  />
+                                </div>
+                              ) : (
+                                <textarea 
+                                  className="w-full bg-background border border-border rounded-2xl p-4 text-base min-h-[120px] outline-none focus:ring-2 focus:ring-accent/10 transition-all resize-none"
+                                  value={section.content || ''}
+                                  onChange={(e) => updateSection(section.tempId, 'content', e.target.value)}
+                                  placeholder="Viết những lời tri ân, kỷ niệm tại đây..."
+                                />
+                              )}
                             </div>
                          </div>
                        </Reorder.Item>
